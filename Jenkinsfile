@@ -8,6 +8,7 @@ pipeline {
 
   environment {
     CI = 'true'
+    DOCKER_HOST = 'tcp://localhost:2375'
   }
 
   stages {
