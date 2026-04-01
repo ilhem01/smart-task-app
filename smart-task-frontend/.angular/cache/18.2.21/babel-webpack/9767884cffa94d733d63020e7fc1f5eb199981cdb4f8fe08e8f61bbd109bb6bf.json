@@ -1,0 +1,1 @@
+{"ast":null,"code":"export const environment = {\n  production: true,\n  /** API Gateway base URL (override for your deployment) */\n  apiUrl: 'http://localhost:8080'\n};","map":null,"metadata":{},"sourceType":"module","externalDependencies":[]}

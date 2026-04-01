@@ -1,0 +1,10 @@
+<nav class="nav container">
+  <a routerLink="/login">Login</a>
+  <a routerLink="/register">Register</a>
+  <a routerLink="/tasks">Tasks</a>
+  <button type="button" (click)="logout()">Logout</button>
+</nav>
+
+<main class="container">
+  <router-outlet></router-outlet>
+</main>

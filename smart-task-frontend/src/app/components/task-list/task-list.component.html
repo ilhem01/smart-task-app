@@ -1,0 +1,187 @@
+<div class="task-page">
+  <header class="task-header">
+    <h1 class="task-title">Smart Task AI</h1>
+    <p class="task-lead">AI-powered task prioritization</p>
+  </header>
+
+  <section class="task-form-card" aria-label="New task">
+    <h2 class="section-heading">New task</h2>
+    <form class="task-form" (ngSubmit)="onCreateTask()">
+      <div class="task-create-row">
+        <label class="sr-only" for="task-title">Task title</label>
+        <input
+          id="task-title"
+          class="input-field task-create-input"
+          [(ngModel)]="title"
+          name="title"
+          type="text"
+          placeholder="What needs to be done?"
+          autocomplete="off"
+        />
+        <button type="submit" class="btn btn-primary" [disabled]="savingTask">
+          <span *ngIf="savingTask" class="spinner spinner-inline" aria-hidden="true"></span>
+          {{ savingTask ? 'Adding…' : 'Add task' }}
+        </button>
+      </div>
+
+      <details class="task-advanced">
+        <summary>More options</summary>
+        <div class="form-row task-advanced-inner">
+          <div class="form-group">
+            <label for="task-priority">Priority</label>
+            <select id="task-priority" class="input-field" [(ngModel)]="priority" name="priority">
+              <option value="LOW">Low</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HIGH">High</option>
+            </select>
+          </div>
+          <div class="form-group form-group-grow">
+            <label for="task-desc">Description</label>
+            <input
+              id="task-desc"
+              class="input-field"
+              [(ngModel)]="description"
+              name="description"
+              type="text"
+              placeholder="Optional details"
+            />
+          </div>
+          <div class="form-group form-group-narrow">
+            <label for="task-due">Due date</label>
+            <input id="task-due" class="input-field" [(ngModel)]="dueDate" name="dueDate" type="date" />
+          </div>
+        </div>
+      </details>
+    </form>
+  </section>
+
+  <p *ngIf="errorMessage" class="msg-error task-banner">{{ errorMessage }}</p>
+
+  <section class="ai-panel-card" aria-label="AI panel">
+    <div class="recommendation-title-row">
+      <h2 class="section-heading">🤖 AI Panel</h2>
+      <span class="recommendation-pill">AI</span>
+    </div>
+    <div class="ai-panel-actions">
+      <button type="button" class="btn btn-primary ai-panel-btn" (click)="onGetAiRecommendation()" [disabled]="loading">
+        {{ loading ? 'Loading…' : 'Get AI Recommendation' }}
+      </button>
+    </div>
+    <div class="ai-panel-grid">
+      <div class="ai-panel-item">
+        <span class="ai-dashboard-label">Stress level</span>
+        <span
+          class="ai-dashboard-value ai-stress-badge recommendation-stress-pill"
+          [ngClass]="{
+            'ai-stress-low': stressLevel.toLowerCase() === 'low',
+            'ai-stress-medium': stressLevel.toLowerCase() === 'medium',
+            'ai-stress-high': stressLevel.toLowerCase() === 'high'
+          }"
+        >
+          {{ stressLevel || 'N/A' }}
+        </span>
+      </div>
+      <div class="ai-panel-item">
+        <span class="ai-dashboard-label">Recommended task</span>
+        <p class="recommendation-task">{{ recommendedTask?.title || 'N/A' }}</p>
+      </div>
+    </div>
+    <div *ngIf="reason" class="recommendation-reason-box">
+      <span class="recommendation-reason-label">Reason</span>
+      <p class="recommendation-reason-text">{{ reason }}</p>
+    </div>
+  </section>
+
+  <section *ngIf="loading" class="ai-loading-card" aria-live="polite">
+    🤖 AI is analyzing your tasks...
+  </section>
+
+  <section class="ai-dashboard-card" aria-label="AI dashboard">
+    <h2 class="ai-dashboard-title">🧠 AI Dashboard</h2>
+    <div class="ai-dashboard-grid">
+      <div class="ai-dashboard-item">
+        <span class="ai-dashboard-label">Total tasks</span>
+        <span class="ai-dashboard-value">{{ tasks.length }}</span>
+      </div>
+      <div class="ai-dashboard-item">
+        <span class="ai-dashboard-label">Status</span>
+        <span *ngIf="stressLevel.toLowerCase() === 'high'" class="ai-overloaded-label">⚠️ Overloaded</span>
+        <span *ngIf="stressLevel.toLowerCase() !== 'high'" class="ai-dashboard-value">Normal</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="task-list-section" aria-label="Task list">
+    <div class="task-list-toolbar">
+      <div>
+        <h2 class="section-heading">Your tasks</h2>
+        <p class="task-list-hint">
+          Add tasks above. Use the checkbox to set <strong>completed</strong>, or <strong>Delete</strong> to remove.
+        </p>
+      </div>
+      <span *ngIf="loadingTasks" class="loading-label" aria-live="polite">
+        <span class="spinner spinner-inline" aria-hidden="true"></span>
+        Loading…
+      </span>
+    </div>
+
+    <div *ngIf="!loadingTasks && tasks.length === 0" class="task-empty">
+      <p>No tasks yet. Add one above.</p>
+    </div>
+
+    <ul *ngIf="!loadingTasks && tasks.length > 0" class="task-list">
+      <li
+        *ngFor="let task of tasks; trackBy: trackByTaskId"
+        class="task-item"
+        [class.task-item--completed]="task.completed"
+        [class.task-item--urgent]="isUrgentTask(task)"
+        [class.recommended]="task.id === recommendedTaskId"
+      >
+        <label class="task-check">
+          <input
+            type="checkbox"
+            [checked]="!!task.completed"
+            [disabled]="updatingId === task.id"
+            (change)="onToggleCompleted(task, $event)"
+            [attr.aria-label]="task.completed ? 'Mark as not completed: ' + task.title : 'Mark as completed: ' + task.title"
+          />
+        </label>
+        <div class="task-main">
+          <span class="task-item-title">
+            {{ task.title }}
+            <span *ngIf="task.id === recommendedTaskId" class="recommended-label">🔥 Recommended</span>
+          </span>
+          <span *ngIf="task.description" class="task-item-desc">{{ task.description }}</span>
+          <div class="task-meta">
+            <span class="task-status" [class.task-status--done]="task.completed" [class.task-status--open]="!task.completed">
+              {{ task.completed ? 'Completed' : 'Open' }}
+            </span>
+            <span *ngIf="task.priority" class="task-badge">{{ task.priority }}</span>
+            <span *ngIf="task.effort != null" class="task-badge task-effort">Effort {{ task.effort }}/5</span>
+            <span
+              *ngIf="task.stressLevel"
+              class="task-badge task-stress"
+              [class.task-stress--low]="task.stressLevel === 'low'"
+              [class.task-stress--medium]="task.stressLevel === 'medium'"
+              [class.task-stress--high]="task.stressLevel === 'high'"
+            >
+              Stress {{ task.stressLevel }}
+            </span>
+            <span *ngIf="task.deadline != null" class="task-badge task-deadline">Deadline {{ task.deadline }}d</span>
+            <span *ngIf="task.dueDate" class="task-due">Due {{ task.dueDate }}</span>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="btn btn-danger"
+          [disabled]="deletingId === task.id"
+          [attr.aria-label]="'Delete task: ' + task.title"
+          (click)="onDeleteTask(task.id)"
+        >
+          <span *ngIf="deletingId === task.id" class="spinner spinner-inline" aria-hidden="true"></span>
+          {{ deletingId === task.id ? '…' : 'Delete' }}
+        </button>
+      </li>
+    </ul>
+  </section>
+</div>
