@@ -78,5 +78,42 @@ services:
       - api-gateway
     restart: unless-stopped
 
+  ci-backend-tests:
+    image: maven:3.9.9-eclipse-temurin-17
+    container_name: smart-task-ci-backend-tests
+    working_dir: /workspace
+    profiles: ["ci"]
+    command: >
+      sh -c "
+      cd auth-service && mvn -B clean test &&
+      cd ../task-service && mvn -B clean test &&
+      cd ../api-gateway && mvn -B clean test
+      "
+    volumes:
+      - ./:/workspace
+      - maven_cache:/root/.m2
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB_TASK:-taskdb}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+
+  ci-frontend-tests:
+    image: cypress/browsers:node-20.11.1-chrome-121.0.6167.85-1-ff-122.0.1-edge-121.0.2277.83-1
+    container_name: smart-task-ci-frontend-tests
+    working_dir: /workspace/smart-task-frontend
+    profiles: ["ci"]
+    command: >
+      sh -c "
+      npm ci &&
+      npm run test -- --watch=false --browsers=ChromeHeadless --no-progress &&
+      npm run build -- --configuration production
+      "
+    volumes:
+      - ./:/workspace
+
 volumes:
   postgres_data:
+  maven_cache:
