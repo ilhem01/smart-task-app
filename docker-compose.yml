@@ -101,7 +101,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
 
   ci-frontend-tests:
-    image: cypress/browsers:node-20.11.1-chrome-121.0.6167.85-1-ff-122.0.1-edge-121.0.2277.83-1
+    image: cypress/included:latest
     container_name: smart-task-ci-frontend-tests
     working_dir: /workspace/smart-task-frontend
     profiles: ["ci"]
