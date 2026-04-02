@@ -119,13 +119,13 @@ services:
 
   ci-frontend-tests:
     image: cypress/included:latest
+    entrypoint: ["/bin/sh", "-c"]
     working_dir: /workspace
     profiles:
       - ci
     volumes:
       - .:/workspace
-    command: >
-      sh -c "cd smart-task-frontend && npm ci && npx cypress run"
+    command: "cd smart-task-frontend && npm ci && npx cypress run"
     tty: false
     stdin_open: false
 
