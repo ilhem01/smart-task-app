@@ -151,6 +151,56 @@ pipeline {
       }
     }
 
+    stage('Build and Push Docker Images to GHCR') {
+      steps {
+        script {
+          if (isUnix()) {
+            sh '''
+              set -eux
+              REG="${SMART_TASK_IMAGE_REGISTRY}"
+              TAG="${SMART_TASK_IMAGE_TAG}"
+              echo "== docker build + push auth-service =="
+              docker build -t "${REG}/smart-task-auth-service:${TAG}" ./auth-service
+              docker push "${REG}/smart-task-auth-service:${TAG}"
+              echo "== docker build + push task-service =="
+              docker build -t "${REG}/smart-task-task-service:${TAG}" ./task-service
+              docker push "${REG}/smart-task-task-service:${TAG}"
+              echo "== docker build + push api-gateway =="
+              docker build -t "${REG}/smart-task-api-gateway:${TAG}" ./api-gateway
+              docker push "${REG}/smart-task-api-gateway:${TAG}"
+              echo "== docker build + push frontend =="
+              docker build -t "${REG}/smart-task-frontend:${TAG}" ./smart-task-frontend
+              docker push "${REG}/smart-task-frontend:${TAG}"
+            '''
+          } else {
+            bat '''
+              @echo off
+              echo == docker build + push auth-service ==
+              docker build -t %SMART_TASK_IMAGE_REGISTRY%/smart-task-auth-service:%SMART_TASK_IMAGE_TAG% ./auth-service
+              if errorlevel 1 exit /b 1
+              docker push %SMART_TASK_IMAGE_REGISTRY%/smart-task-auth-service:%SMART_TASK_IMAGE_TAG%
+              if errorlevel 1 exit /b 1
+              echo == docker build + push task-service ==
+              docker build -t %SMART_TASK_IMAGE_REGISTRY%/smart-task-task-service:%SMART_TASK_IMAGE_TAG% ./task-service
+              if errorlevel 1 exit /b 1
+              docker push %SMART_TASK_IMAGE_REGISTRY%/smart-task-task-service:%SMART_TASK_IMAGE_TAG%
+              if errorlevel 1 exit /b 1
+              echo == docker build + push api-gateway ==
+              docker build -t %SMART_TASK_IMAGE_REGISTRY%/smart-task-api-gateway:%SMART_TASK_IMAGE_TAG% ./api-gateway
+              if errorlevel 1 exit /b 1
+              docker push %SMART_TASK_IMAGE_REGISTRY%/smart-task-api-gateway:%SMART_TASK_IMAGE_TAG%
+              if errorlevel 1 exit /b 1
+              echo == docker build + push frontend ==
+              docker build -t %SMART_TASK_IMAGE_REGISTRY%/smart-task-frontend:%SMART_TASK_IMAGE_TAG% ./smart-task-frontend
+              if errorlevel 1 exit /b 1
+              docker push %SMART_TASK_IMAGE_REGISTRY%/smart-task-frontend:%SMART_TASK_IMAGE_TAG%
+              if errorlevel 1 exit /b 1
+            '''
+          }
+        }
+      }
+    }
+
     stage('Pull Docker Images from GitHub Container Registry') {
       steps {
         script {
