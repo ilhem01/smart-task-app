@@ -57,7 +57,15 @@ pipeline {
             }
           }
           junit allowEmptyResults: true,
-            testResults: '**/target/surefire-reports/*.xml, **/target/failsafe-reports/*.xml, smart-task-frontend/**/junit*.xml, smart-task-frontend/**/TESTS-*.xml'
+            testResults: '**/target/surefire-reports/*.xml, **/target/failsafe-reports/*.xml, smart-task-frontend/**/junit*.xml, smart-task-frontend/**/TESTS-*.xml, smart-task-frontend/cypress/results/*.xml'
+          publishHTML(target: [
+            allowMissing: true,
+            alwaysLinkToLastBuild: true,
+            keepAll: true,
+            reportDir: 'smart-task-frontend/cypress/reports',
+            reportFiles: 'index.html',
+            reportName: 'Cypress HTML Report'
+          ])
           archiveArtifacts allowEmptyArchive: true,
             artifacts: '**/target/*.jar, smart-task-frontend/dist/**'
         }
