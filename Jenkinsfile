@@ -8,6 +8,7 @@ pipeline {
 
   environment {
     CI = 'true'
+    IMAGE_PREFIX = 'smart-task'
   }
 
   stages {
@@ -68,6 +69,62 @@ pipeline {
           ])
           archiveArtifacts allowEmptyArchive: true,
             artifacts: '**/target/*.jar, smart-task-frontend/dist/**'
+        }
+      }
+    }
+
+    stage('Build Docker Images') {
+      steps {
+        script {
+          if (isUnix()) {
+            sh 'docker compose build auth-service task-service api-gateway frontend'
+          } else {
+            bat 'docker compose build auth-service task-service api-gateway frontend'
+          }
+        }
+      }
+    }
+
+    stage('Push Docker Images') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+          script {
+            if (isUnix()) {
+              sh '''
+                set -eu
+                echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+
+                docker tag smart-task-app-auth-service:latest "$DOCKER_USER/$IMAGE_PREFIX-auth-service:latest"
+                docker tag smart-task-app-task-service:latest "$DOCKER_USER/$IMAGE_PREFIX-task-service:latest"
+                docker tag smart-task-app-api-gateway:latest "$DOCKER_USER/$IMAGE_PREFIX-api-gateway:latest"
+                docker tag smart-task-app-frontend:latest "$DOCKER_USER/$IMAGE_PREFIX-frontend:latest"
+
+                docker push "$DOCKER_USER/$IMAGE_PREFIX-auth-service:latest"
+                docker push "$DOCKER_USER/$IMAGE_PREFIX-task-service:latest"
+                docker push "$DOCKER_USER/$IMAGE_PREFIX-api-gateway:latest"
+                docker push "$DOCKER_USER/$IMAGE_PREFIX-frontend:latest"
+
+                docker logout
+              '''
+            } else {
+              bat '''
+                @echo off
+                echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+
+                docker tag smart-task-app-auth-service:latest %DOCKER_USER%/%IMAGE_PREFIX%-auth-service:latest
+                docker tag smart-task-app-task-service:latest %DOCKER_USER%/%IMAGE_PREFIX%-task-service:latest
+                docker tag smart-task-app-api-gateway:latest %DOCKER_USER%/%IMAGE_PREFIX%-api-gateway:latest
+                docker tag smart-task-app-frontend:latest %DOCKER_USER%/%IMAGE_PREFIX%-frontend:latest
+
+                docker push %DOCKER_USER%/%IMAGE_PREFIX%-auth-service:latest
+                docker push %DOCKER_USER%/%IMAGE_PREFIX%-task-service:latest
+                docker push %DOCKER_USER%/%IMAGE_PREFIX%-api-gateway:latest
+                docker push %DOCKER_USER%/%IMAGE_PREFIX%-frontend:latest
+
+                docker logout
+              '''
+            }
+          }
         }
       }
     }
