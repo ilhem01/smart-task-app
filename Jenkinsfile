@@ -116,6 +116,8 @@ pipeline {
       }
     }
 
+    // Jenkins credential id github-ghcr: type "Username with password" — username = GitHub login (not email);
+    // password = classic PAT with read:packages + write:packages; add repo if packages are private / need repo access.
     stage('Login to GitHub Container Registry') {
       steps {
         withCredentials([usernamePassword(credentialsId: 'github-ghcr', usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_TOKEN')]) {
@@ -129,39 +131,19 @@ pipeline {
                 printf '%s' "$TOKEN" | docker login ghcr.io -u "$USER" --password-stdin
               '''
             } else {
-              powershell '''
-                $ErrorActionPreference = 'Stop'
-                Write-Host '== docker login ghcr.io (Windows) =='
-                if (-not $env:GHCR_USER -or -not $env:GHCR_TOKEN) {
-                  Write-Error 'GHCR_USER or GHCR_TOKEN is not set (check withCredentials github-ghcr).'
-                  exit 1
-                }
-                $user = $env:GHCR_USER.Trim()
-                $token = $env:GHCR_TOKEN.Trim()
-                if ([string]::IsNullOrEmpty($user) -or [string]::IsNullOrEmpty($token)) {
-                  Write-Error 'GHCR_USER or GHCR_TOKEN is empty after trim.'
-                  exit 1
-                }
-                $psi = New-Object System.Diagnostics.ProcessStartInfo
-                $psi.FileName = 'docker'
-                $psi.Arguments = "login ghcr.io -u `"$user`" --password-stdin"
-                $psi.UseShellExecute = $false
-                $psi.RedirectStandardInput = $true
-                $psi.RedirectStandardError = $true
-                $psi.RedirectStandardOutput = $true
-                $p = New-Object System.Diagnostics.Process
-                $p.StartInfo = $psi
-                [void]$p.Start()
-                $utf8 = [System.Text.UTF8Encoding]::new($false)
-                $bytes = $utf8.GetBytes($token)
-                $p.StandardInput.BaseStream.Write($bytes, 0, $bytes.Length)
-                $p.StandardInput.Close()
-                $p.WaitForExit()
-                $out = $p.StandardOutput.ReadToEnd()
-                $err = $p.StandardError.ReadToEnd()
-                if ($out) { Write-Host $out }
-                if ($err) { Write-Host $err }
-                exit $p.ExitCode
+              bat '''
+                @echo off
+                echo == docker login ghcr.io (Windows bat) ==
+                if not defined GHCR_USER (
+                  echo ERROR: GHCR_USER is not set. Check credential github-ghcr / withCredentials binding.
+                  exit /b 1
+                )
+                if not defined GHCR_TOKEN (
+                  echo ERROR: GHCR_TOKEN is not set. Check credential github-ghcr / withCredentials binding.
+                  exit /b 1
+                )
+                powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "$u=$env:GHCR_USER.Trim(); $t=$env:GHCR_TOKEN.Trim(); if(-not $u -or -not $t){Write-Error 'Empty GHCR_USER or GHCR_TOKEN'; exit 1}; $t | docker login ghcr.io -u $u --password-stdin; exit $LASTEXITCODE"
+                if errorlevel 1 exit /b 1
               '''
             }
           }
