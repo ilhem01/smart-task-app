@@ -131,11 +131,37 @@ pipeline {
             } else {
               powershell '''
                 $ErrorActionPreference = 'Stop'
-                Write-Host '== docker login ghcr.io =='
-                $u = $env:GHCR_USER.Trim()
-                $t = $env:GHCR_TOKEN.Trim()
-                $t | docker login ghcr.io -u $u --password-stdin
-                if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+                Write-Host '== docker login ghcr.io (Windows) =='
+                if (-not $env:GHCR_USER -or -not $env:GHCR_TOKEN) {
+                  Write-Error 'GHCR_USER or GHCR_TOKEN is not set (check withCredentials github-ghcr).'
+                  exit 1
+                }
+                $user = $env:GHCR_USER.Trim()
+                $token = $env:GHCR_TOKEN.Trim()
+                if ([string]::IsNullOrEmpty($user) -or [string]::IsNullOrEmpty($token)) {
+                  Write-Error 'GHCR_USER or GHCR_TOKEN is empty after trim.'
+                  exit 1
+                }
+                $psi = New-Object System.Diagnostics.ProcessStartInfo
+                $psi.FileName = 'docker'
+                $psi.Arguments = "login ghcr.io -u `"$user`" --password-stdin"
+                $psi.UseShellExecute = $false
+                $psi.RedirectStandardInput = $true
+                $psi.RedirectStandardError = $true
+                $psi.RedirectStandardOutput = $true
+                $p = New-Object System.Diagnostics.Process
+                $p.StartInfo = $psi
+                [void]$p.Start()
+                $utf8 = [System.Text.UTF8Encoding]::new($false)
+                $bytes = $utf8.GetBytes($token)
+                $p.StandardInput.BaseStream.Write($bytes, 0, $bytes.Length)
+                $p.StandardInput.Close()
+                $p.WaitForExit()
+                $out = $p.StandardOutput.ReadToEnd()
+                $err = $p.StandardError.ReadToEnd()
+                if ($out) { Write-Host $out }
+                if ($err) { Write-Host $err }
+                exit $p.ExitCode
               '''
             }
           }
