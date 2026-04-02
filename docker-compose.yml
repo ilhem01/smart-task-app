@@ -122,11 +122,16 @@ services:
     container_name: smart-task-ci-frontend-tests
     working_dir: /workspace/smart-task-frontend
     profiles: ["ci"]
+    stdin_open: false
+    tty: false
     entrypoint: ["sh", "-ec"]
     command: |
       npm ci
-      npm run test -- --watch=false --browsers=ChromeHeadless --no-progress --progress=false
+      npm run test -- --watch=false --no-watch --browsers=ChromeHeadless --no-progress --progress=false
       npm run build -- --configuration production
+    environment:
+      CI: "true"
+      CHROME_BIN: /usr/bin/google-chrome
     volumes:
       - ./:/workspace
 
