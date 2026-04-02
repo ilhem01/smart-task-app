@@ -78,6 +78,21 @@ services:
       - api-gateway
     restart: unless-stopped
 
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: smart-task-n8n
+    ports:
+      - "5678:5678"
+    environment:
+      N8N_HOST: localhost
+      N8N_PORT: 5678
+      N8N_PROTOCOL: http
+      WEBHOOK_URL: http://localhost:5678/
+      TZ: UTC
+    volumes:
+      - n8n_data:/home/node/.n8n
+    restart: unless-stopped
+
   ci-backend-tests:
     image: maven:3.9.9-eclipse-temurin-17
     container_name: smart-task-ci-backend-tests
@@ -117,3 +132,5 @@ services:
 volumes:
   postgres_data:
   maven_cache:
+  n8n_data:
+

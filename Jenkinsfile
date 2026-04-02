@@ -36,9 +36,9 @@ stage('Build And Test In Docker Compose') {
     always {
       script {
         if (isUnix()) {
-          sh 'docker-compose down -v --remove-orphans || true'
+          sh 'docker-compose down --remove-orphans || true'
         } else {
-          bat 'docker-compose down -v --remove-orphans'
+          bat 'docker-compose down --remove-orphans'
         }
       }
       junit allowEmptyResults: true,
