@@ -21,9 +21,28 @@ pipeline {
       steps {
         script {
           if (isUnix()) {
-            sh 'docker compose down --remove-orphans || true'
+            sh '''
+              set +e
+              echo "== Compose down (project in workspace) =="
+              docker compose down --remove-orphans 2>/dev/null || true
+
+              echo "== Remove any leftover smart-task containers =="
+              REMAINING="$(docker ps -aq --filter "name=smart-task" 2>/dev/null)"
+              if [ -n "$REMAINING" ]; then
+                docker rm -f $REMAINING
+              else
+                echo "No matching containers."
+              fi
+            '''
           } else {
-            bat 'docker compose down --remove-orphans'
+            bat '''
+              @echo off
+              echo == Compose down (project in workspace) ==
+              docker compose down --remove-orphans 2>nul
+
+              echo == Remove any leftover smart-task containers ==
+              for /f "tokens=*" %%i in ('docker ps -aq --filter "name=smart-task" 2^>nul') do docker rm -f %%i
+            '''
           }
         }
       }

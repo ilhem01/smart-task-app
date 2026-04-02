@@ -1,7 +1,6 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: smart-task-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
@@ -20,7 +19,6 @@ services:
     build:
       context: ./auth-service
       dockerfile: Dockerfile
-    container_name: smart-task-auth-service
     ports:
       - "8081:8081"
     environment:
@@ -36,7 +34,6 @@ services:
     build:
       context: ./task-service
       dockerfile: Dockerfile
-    container_name: smart-task-task-service
     ports:
       - "8082:8082"
     environment:
@@ -52,7 +49,6 @@ services:
     build:
       context: ./api-gateway
       dockerfile: Dockerfile
-    container_name: smart-task-api-gateway
     ports:
       - "8080:8080"
     environment:
@@ -69,7 +65,6 @@ services:
     build:
       context: ./smart-task-frontend
       dockerfile: Dockerfile
-    container_name: smart-task-frontend
     ports:
       - "4200:80"
     depends_on:
@@ -78,7 +73,6 @@ services:
 
   n8n:
     image: n8nio/n8n:latest
-    container_name: smart-task-n8n
     ports:
       - "5678:5678"
     environment:
@@ -93,7 +87,6 @@ services:
 
   ci-backend-tests:
     image: maven:3.9.9-eclipse-temurin-17
-    container_name: smart-task-ci-backend-tests
     working_dir: /workspace
     profiles: ["ci"]
     command:
