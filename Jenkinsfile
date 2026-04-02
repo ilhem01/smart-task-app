@@ -8,6 +8,8 @@ pipeline {
 
   environment {
     CI = 'true'
+    SMART_TASK_IMAGE_REGISTRY = 'ghcr.io/ilhem01'
+    SMART_TASK_IMAGE_TAG = "${env.SMART_TASK_IMAGE_TAG ?: 'latest'}"
   }
 
   stages {
@@ -108,13 +110,60 @@ pipeline {
       }
     }
 
+    stage('Login to GitHub Container Registry') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'github-ghcr', usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_TOKEN')]) {
+          script {
+            if (isUnix()) {
+              sh '''
+                set -eux
+                echo "== docker login ghcr.io =="
+                USER="$(printf '%s' "$GHCR_USER" | tr -d '\\r\\n')"
+                TOKEN="$(printf '%s' "$GHCR_TOKEN" | tr -d '\\r\\n')"
+                printf '%s' "$TOKEN" | docker login ghcr.io -u "$USER" --password-stdin
+              '''
+            } else {
+              powershell '''
+                $ErrorActionPreference = 'Stop'
+                Write-Host '== docker login ghcr.io =='
+                $u = $env:GHCR_USER.Trim()
+                $t = $env:GHCR_TOKEN.Trim()
+                $t | docker login ghcr.io -u $u --password-stdin
+                if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+              '''
+            }
+          }
+        }
+      }
+    }
+
+    stage('Pull Docker Images from GitHub Container Registry') {
+      steps {
+        script {
+          if (isUnix()) {
+            sh '''
+              set -eux
+              echo "== Pull app images from GHCR =="
+              docker compose pull auth-service task-service api-gateway frontend
+            '''
+          } else {
+            bat '''
+              @echo off
+              echo == Pull app images from GHCR ==
+              docker compose pull auth-service task-service api-gateway frontend
+            '''
+          }
+        }
+      }
+    }
+
     stage('Deploy') {
       steps {
         script {
           if (isUnix()) {
-            sh 'docker compose up -d --build postgres auth-service task-service api-gateway frontend'
+            sh 'docker compose up -d postgres auth-service task-service api-gateway frontend'
           } else {
-            bat 'docker compose up -d --build postgres auth-service task-service api-gateway frontend'
+            bat 'docker compose up -d postgres auth-service task-service api-gateway frontend'
           }
         }
       }

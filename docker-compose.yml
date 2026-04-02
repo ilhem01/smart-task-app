@@ -16,9 +16,7 @@ services:
     restart: unless-stopped
 
   auth-service:
-    build:
-      context: ./auth-service
-      dockerfile: Dockerfile
+    image: ${SMART_TASK_IMAGE_REGISTRY:-ghcr.io/ilhem01}/smart-task-auth-service:${SMART_TASK_IMAGE_TAG:-latest}
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB_AUTH:-auth_db}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
@@ -29,9 +27,7 @@ services:
     restart: unless-stopped
 
   task-service:
-    build:
-      context: ./task-service
-      dockerfile: Dockerfile
+    image: ${SMART_TASK_IMAGE_REGISTRY:-ghcr.io/ilhem01}/smart-task-task-service:${SMART_TASK_IMAGE_TAG:-latest}
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB_TASK:-taskdb}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
@@ -42,9 +38,7 @@ services:
     restart: unless-stopped
 
   api-gateway:
-    build:
-      context: ./api-gateway
-      dockerfile: Dockerfile
+    image: ${SMART_TASK_IMAGE_REGISTRY:-ghcr.io/ilhem01}/smart-task-api-gateway:${SMART_TASK_IMAGE_TAG:-latest}
     environment:
       AUTH_SERVICE_URI: http://auth-service:8081
       TASK_SERVICE_URI: http://task-service:8082
@@ -56,9 +50,7 @@ services:
     restart: unless-stopped
 
   frontend:
-    build:
-      context: ./smart-task-frontend
-      dockerfile: Dockerfile
+    image: ${SMART_TASK_IMAGE_REGISTRY:-ghcr.io/ilhem01}/smart-task-frontend:${SMART_TASK_IMAGE_TAG:-latest}
     depends_on:
       - api-gateway
     restart: unless-stopped
