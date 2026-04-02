@@ -19,8 +19,6 @@ services:
     build:
       context: ./auth-service
       dockerfile: Dockerfile
-    ports:
-      - "8081:8081"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB_AUTH:-auth_db}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
@@ -34,8 +32,6 @@ services:
     build:
       context: ./task-service
       dockerfile: Dockerfile
-    ports:
-      - "8082:8082"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB_TASK:-taskdb}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
@@ -49,8 +45,6 @@ services:
     build:
       context: ./api-gateway
       dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
     environment:
       AUTH_SERVICE_URI: http://auth-service:8081
       TASK_SERVICE_URI: http://task-service:8082
@@ -65,16 +59,12 @@ services:
     build:
       context: ./smart-task-frontend
       dockerfile: Dockerfile
-    ports:
-      - "4200:80"
     depends_on:
       - api-gateway
     restart: unless-stopped
 
   n8n:
     image: n8nio/n8n:latest
-    ports:
-      - "5678:5678"
     environment:
       N8N_HOST: localhost
       N8N_PORT: 5678

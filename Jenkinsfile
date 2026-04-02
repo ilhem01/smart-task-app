@@ -33,6 +33,14 @@ pipeline {
               else
                 echo "No matching containers."
               fi
+
+              echo "== Remove all containers (free host ports on agent) =="
+              ALL_IDS="$(docker ps -aq 2>/dev/null)"
+              if [ -n "$ALL_IDS" ]; then
+                docker rm -f $ALL_IDS
+              else
+                echo "No containers left."
+              fi
             '''
           } else {
             bat '''
@@ -42,6 +50,9 @@ pipeline {
 
               echo == Remove any leftover smart-task containers ==
               for /f "tokens=*" %%i in ('docker ps -aq --filter "name=smart-task" 2^>nul') do docker rm -f %%i
+
+              echo == Remove all containers (free host ports on agent) ==
+              for /f "tokens=*" %%i in ('docker ps -aq 2^>nul') do docker rm -f %%i
             '''
           }
         }
