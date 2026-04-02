@@ -119,16 +119,31 @@ services:
 
   ci-frontend-tests:
     image: cypress/included:latest
-    container_name: smart-task-ci-frontend-tests
-    working_dir: /workspace/smart-task-frontend
+    working_dir: /workspace
     profiles:
       - ci
     volumes:
       - .:/workspace
-    entrypoint: ["sh", "-ec"]
-    command: |
-      npm ci
-      npx cypress run
+    command:
+      - sh
+      - -c
+      - |
+        echo "== DEBUG START =="
+        pwd
+        ls -la
+
+        echo "== TRY ENTER FRONTEND =="
+        cd smart-task-frontend || exit 1
+
+        echo "== INSIDE FRONTEND =="
+        pwd
+        ls -la
+
+        echo "== INSTALL =="
+        npm ci
+
+        echo "== RUN TESTS =="
+        npx cypress run
     tty: false
     stdin_open: false
 
