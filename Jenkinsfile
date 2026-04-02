@@ -45,16 +45,22 @@ pipeline {
               fi
             '''
           } else {
-            bat '''
-              @echo off
-              echo == Compose down (project in workspace) ==
-              docker compose down --remove-orphans 2>nul
+            powershell '''
+              $ErrorActionPreference = "Continue"
+              Write-Host "== Compose down (project in workspace) =="
+              docker compose down --remove-orphans 2>&1 | Out-Null
 
-              echo == Remove any leftover smart-task containers ==
-              for /f "tokens=*" %%i in ('docker ps -aq --filter "name=smart-task" 2^>nul') do docker rm -f %%i
+              Write-Host "== Remove containers matching name smart-task =="
+              docker ps -aq --filter "name=smart-task" 2>$null | ForEach-Object {
+                $id = ($_ -as [string]).Trim()
+                if ($id) { & docker rm -f -- $id 2>&1 | Out-Null }
+              }
 
-              echo == Remove all containers (free host ports on agent) ==
-              for /f "tokens=*" %%i in ('docker ps -aq 2^>nul') do docker rm -f %%i
+              Write-Host "== Remove all remaining containers (free host ports) =="
+              docker ps -aq 2>$null | ForEach-Object {
+                $id = ($_ -as [string]).Trim()
+                if ($id) { & docker rm -f -- $id 2>&1 | Out-Null }
+              }
             '''
           }
         }
