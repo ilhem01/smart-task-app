@@ -124,26 +124,8 @@ services:
       - ci
     volumes:
       - .:/workspace
-    command:
-      - sh
-      - -c
-      - |
-        echo "== DEBUG START =="
-        pwd
-        ls -la
-
-        echo "== TRY ENTER FRONTEND =="
-        cd smart-task-frontend || exit 1
-
-        echo "== INSIDE FRONTEND =="
-        pwd
-        ls -la
-
-        echo "== INSTALL =="
-        npm ci
-
-        echo "== RUN TESTS =="
-        npx cypress run
+    command: >
+      sh -c "cd smart-task-frontend && npm ci && npx cypress run"
     tty: false
     stdin_open: false
 
