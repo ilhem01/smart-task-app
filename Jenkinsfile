@@ -91,6 +91,14 @@ pipeline {
       }
     }
 
+    stage('Debug Docker') {
+      steps {
+        bat 'whoami'
+        bat 'docker context ls'
+        bat 'docker info'
+      }
+    }
+
     stage('Docker Hub Login') {
       steps {
         withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
