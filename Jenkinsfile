@@ -59,16 +59,22 @@ pipeline {
           }
           junit allowEmptyResults: true,
             testResults: '**/target/surefire-reports/*.xml, **/target/failsafe-reports/*.xml, smart-task-frontend/**/junit*.xml, smart-task-frontend/**/TESTS-*.xml, smart-task-frontend/cypress/results/*.xml'
-          publishHTML(target: [
-            allowMissing: true,
-            alwaysLinkToLastBuild: true,
-            keepAll: true,
-            reportDir: 'smart-task-frontend/cypress/reports',
-            reportFiles: 'index.html',
-            reportName: 'Cypress HTML Report'
-          ])
+          script {
+            if (fileExists('smart-task-frontend/cypress/reports/index.html')) {
+              publishHTML(target: [
+                allowMissing: true,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'smart-task-frontend/cypress/reports',
+                reportFiles: 'index.html',
+                reportName: 'Cypress HTML Report'
+              ])
+            } else {
+              echo 'Cypress HTML report not found; skipping publishHTML.'
+            }
+          }
           archiveArtifacts allowEmptyArchive: true,
-            artifacts: '**/target/*.jar, smart-task-frontend/dist/**'
+            artifacts: '**/target/*.jar, **/target/surefire-reports/*.xml, **/target/failsafe-reports/*.xml, smart-task-frontend/cypress/results/*.xml, smart-task-frontend/cypress/reports/**, smart-task-frontend/cypress/screenshots/**, smart-task-frontend/cypress/videos/**, smart-task-frontend/dist/**'
         }
       }
     }
