@@ -91,6 +91,37 @@ pipeline {
       }
     }
 
+    stage('Docker Hub Login') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+          script {
+            if (isUnix()) {
+              sh '''
+                set -eux
+                echo "== Docker login stage (Linux) =="
+                echo "Docker user: $DOCKER_USER"
+                docker --version
+
+                echo "== Login Docker Hub =="
+                echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+              '''
+            } else {
+              bat '''
+                @echo off
+                echo == Docker login stage (Windows) ==
+                echo Docker user: %DOCKER_USER%
+                docker --version
+
+                echo == Login Docker Hub ==
+                echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+                if errorlevel 1 exit /b 1
+              '''
+            }
+          }
+        }
+      }
+    }
+
     stage('Push Docker Images') {
       steps {
         withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
@@ -99,17 +130,13 @@ pipeline {
               sh '''
                 set -eux
                 echo "== Docker push stage (Linux) =="
-                echo "Docker user: $DOCKER_USER"
-                docker --version
-
-                echo "== Login Docker Hub =="
-                echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 
                 echo "== Verify local images exist =="
-                docker image inspect smart-task-app-auth-service:latest >/dev/null
-                docker image inspect smart-task-app-task-service:latest >/dev/null
-                docker image inspect smart-task-app-api-gateway:latest >/dev/null
-                docker image inspect smart-task-app-frontend:latest >/dev/null
+                AUTH_SRC="$(docker compose images -q auth-service)"
+                TASK_SRC="$(docker compose images -q task-service)"
+                GATEWAY_SRC="$(docker compose images -q api-gateway)"
+                FRONT_SRC="$(docker compose images -q frontend)"
+                [ -n "$AUTH_SRC" ] && [ -n "$TASK_SRC" ] && [ -n "$GATEWAY_SRC" ] && [ -n "$FRONT_SRC" ]
 
                 AUTH_IMG="$DOCKER_USER/$IMAGE_PREFIX-auth-service:latest"
                 TASK_IMG="$DOCKER_USER/$IMAGE_PREFIX-task-service:latest"
@@ -117,10 +144,10 @@ pipeline {
                 FRONT_IMG="$DOCKER_USER/$IMAGE_PREFIX-frontend:latest"
 
                 echo "== Tag images =="
-                docker tag smart-task-app-auth-service:latest "$AUTH_IMG"
-                docker tag smart-task-app-task-service:latest "$TASK_IMG"
-                docker tag smart-task-app-api-gateway:latest "$GATEWAY_IMG"
-                docker tag smart-task-app-frontend:latest "$FRONT_IMG"
+                docker tag "$AUTH_SRC" "$AUTH_IMG"
+                docker tag "$TASK_SRC" "$TASK_IMG"
+                docker tag "$GATEWAY_SRC" "$GATEWAY_IMG"
+                docker tag "$FRONT_SRC" "$FRONT_IMG"
 
                 echo "== Push images =="
                 docker push "$AUTH_IMG"
@@ -135,17 +162,16 @@ pipeline {
               bat '''
                 @echo off
                 echo == Docker push stage (Windows) ==
-                echo Docker user: %DOCKER_USER%
-                docker --version
-
-                echo == Login Docker Hub ==
-                echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
 
                 echo == Verify local images exist ==
-                docker image inspect smart-task-app-auth-service:latest >nul
-                docker image inspect smart-task-app-task-service:latest >nul
-                docker image inspect smart-task-app-api-gateway:latest >nul
-                docker image inspect smart-task-app-frontend:latest >nul
+                for /f %%i in ('docker compose images -q auth-service') do set AUTH_SRC=%%i
+                for /f %%i in ('docker compose images -q task-service') do set TASK_SRC=%%i
+                for /f %%i in ('docker compose images -q api-gateway') do set GATEWAY_SRC=%%i
+                for /f %%i in ('docker compose images -q frontend') do set FRONT_SRC=%%i
+                if "%AUTH_SRC%"=="" exit /b 1
+                if "%TASK_SRC%"=="" exit /b 1
+                if "%GATEWAY_SRC%"=="" exit /b 1
+                if "%FRONT_SRC%"=="" exit /b 1
 
                 set AUTH_IMG=%DOCKER_USER%/%IMAGE_PREFIX%-auth-service:latest
                 set TASK_IMG=%DOCKER_USER%/%IMAGE_PREFIX%-task-service:latest
@@ -153,16 +179,24 @@ pipeline {
                 set FRONT_IMG=%DOCKER_USER%/%IMAGE_PREFIX%-frontend:latest
 
                 echo == Tag images ==
-                docker tag smart-task-app-auth-service:latest %AUTH_IMG%
-                docker tag smart-task-app-task-service:latest %TASK_IMG%
-                docker tag smart-task-app-api-gateway:latest %GATEWAY_IMG%
-                docker tag smart-task-app-frontend:latest %FRONT_IMG%
+                docker tag %AUTH_SRC% %AUTH_IMG%
+                if errorlevel 1 exit /b 1
+                docker tag %TASK_SRC% %TASK_IMG%
+                if errorlevel 1 exit /b 1
+                docker tag %GATEWAY_SRC% %GATEWAY_IMG%
+                if errorlevel 1 exit /b 1
+                docker tag %FRONT_SRC% %FRONT_IMG%
+                if errorlevel 1 exit /b 1
 
                 echo == Push images ==
                 docker push %AUTH_IMG%
+                if errorlevel 1 exit /b 1
                 docker push %TASK_IMG%
+                if errorlevel 1 exit /b 1
                 docker push %GATEWAY_IMG%
+                if errorlevel 1 exit /b 1
                 docker push %FRONT_IMG%
+                if errorlevel 1 exit /b 1
 
                 echo == Logout Docker Hub ==
                 docker logout
