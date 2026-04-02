@@ -97,36 +97,74 @@ pipeline {
           script {
             if (isUnix()) {
               sh '''
-                set -eu
+                set -eux
+                echo "== Docker push stage (Linux) =="
+                echo "Docker user: $DOCKER_USER"
+                docker --version
+
+                echo "== Login Docker Hub =="
                 echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 
-                docker tag smart-task-app-auth-service:latest "$DOCKER_USER/$IMAGE_PREFIX-auth-service:latest"
-                docker tag smart-task-app-task-service:latest "$DOCKER_USER/$IMAGE_PREFIX-task-service:latest"
-                docker tag smart-task-app-api-gateway:latest "$DOCKER_USER/$IMAGE_PREFIX-api-gateway:latest"
-                docker tag smart-task-app-frontend:latest "$DOCKER_USER/$IMAGE_PREFIX-frontend:latest"
+                echo "== Verify local images exist =="
+                docker image inspect smart-task-app-auth-service:latest >/dev/null
+                docker image inspect smart-task-app-task-service:latest >/dev/null
+                docker image inspect smart-task-app-api-gateway:latest >/dev/null
+                docker image inspect smart-task-app-frontend:latest >/dev/null
 
-                docker push "$DOCKER_USER/$IMAGE_PREFIX-auth-service:latest"
-                docker push "$DOCKER_USER/$IMAGE_PREFIX-task-service:latest"
-                docker push "$DOCKER_USER/$IMAGE_PREFIX-api-gateway:latest"
-                docker push "$DOCKER_USER/$IMAGE_PREFIX-frontend:latest"
+                AUTH_IMG="$DOCKER_USER/$IMAGE_PREFIX-auth-service:latest"
+                TASK_IMG="$DOCKER_USER/$IMAGE_PREFIX-task-service:latest"
+                GATEWAY_IMG="$DOCKER_USER/$IMAGE_PREFIX-api-gateway:latest"
+                FRONT_IMG="$DOCKER_USER/$IMAGE_PREFIX-frontend:latest"
 
+                echo "== Tag images =="
+                docker tag smart-task-app-auth-service:latest "$AUTH_IMG"
+                docker tag smart-task-app-task-service:latest "$TASK_IMG"
+                docker tag smart-task-app-api-gateway:latest "$GATEWAY_IMG"
+                docker tag smart-task-app-frontend:latest "$FRONT_IMG"
+
+                echo "== Push images =="
+                docker push "$AUTH_IMG"
+                docker push "$TASK_IMG"
+                docker push "$GATEWAY_IMG"
+                docker push "$FRONT_IMG"
+
+                echo "== Logout Docker Hub =="
                 docker logout
               '''
             } else {
               bat '''
                 @echo off
+                echo == Docker push stage (Windows) ==
+                echo Docker user: %DOCKER_USER%
+                docker --version
+
+                echo == Login Docker Hub ==
                 echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
 
-                docker tag smart-task-app-auth-service:latest %DOCKER_USER%/%IMAGE_PREFIX%-auth-service:latest
-                docker tag smart-task-app-task-service:latest %DOCKER_USER%/%IMAGE_PREFIX%-task-service:latest
-                docker tag smart-task-app-api-gateway:latest %DOCKER_USER%/%IMAGE_PREFIX%-api-gateway:latest
-                docker tag smart-task-app-frontend:latest %DOCKER_USER%/%IMAGE_PREFIX%-frontend:latest
+                echo == Verify local images exist ==
+                docker image inspect smart-task-app-auth-service:latest >nul
+                docker image inspect smart-task-app-task-service:latest >nul
+                docker image inspect smart-task-app-api-gateway:latest >nul
+                docker image inspect smart-task-app-frontend:latest >nul
 
-                docker push %DOCKER_USER%/%IMAGE_PREFIX%-auth-service:latest
-                docker push %DOCKER_USER%/%IMAGE_PREFIX%-task-service:latest
-                docker push %DOCKER_USER%/%IMAGE_PREFIX%-api-gateway:latest
-                docker push %DOCKER_USER%/%IMAGE_PREFIX%-frontend:latest
+                set AUTH_IMG=%DOCKER_USER%/%IMAGE_PREFIX%-auth-service:latest
+                set TASK_IMG=%DOCKER_USER%/%IMAGE_PREFIX%-task-service:latest
+                set GATEWAY_IMG=%DOCKER_USER%/%IMAGE_PREFIX%-api-gateway:latest
+                set FRONT_IMG=%DOCKER_USER%/%IMAGE_PREFIX%-frontend:latest
 
+                echo == Tag images ==
+                docker tag smart-task-app-auth-service:latest %AUTH_IMG%
+                docker tag smart-task-app-task-service:latest %TASK_IMG%
+                docker tag smart-task-app-api-gateway:latest %GATEWAY_IMG%
+                docker tag smart-task-app-frontend:latest %FRONT_IMG%
+
+                echo == Push images ==
+                docker push %AUTH_IMG%
+                docker push %TASK_IMG%
+                docker push %GATEWAY_IMG%
+                docker push %FRONT_IMG%
+
+                echo == Logout Docker Hub ==
                 docker logout
               '''
             }
