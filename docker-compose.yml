@@ -96,12 +96,16 @@ services:
     container_name: smart-task-ci-backend-tests
     working_dir: /workspace
     profiles: ["ci"]
-    command: >
-      sh -c "
-      cd auth-service && mvn -B clean test &&
-      cd ../task-service && mvn -B clean test &&
-      cd ../api-gateway && mvn -B clean test
-      "
+    command:
+      - sh
+      - -ec
+      - |
+        cd auth-service
+        mvn -B clean test
+        cd ../task-service
+        mvn -B clean test
+        cd ../api-gateway
+        mvn -B clean test
     volumes:
       - ./:/workspace
       - maven_cache:/root/.m2
@@ -118,12 +122,11 @@ services:
     container_name: smart-task-ci-frontend-tests
     working_dir: /workspace/smart-task-frontend
     profiles: ["ci"]
-    command: >
-      sh -c "
-      npm ci &&
-      npm run test -- --watch=false --browsers=ChromeHeadless --no-progress &&
+    entrypoint: ["sh", "-ec"]
+    command: |
+      npm ci
+      npm run test -- --watch=false --browsers=ChromeHeadless --no-progress --progress=false
       npm run build -- --configuration production
-      "
     volumes:
       - ./:/workspace
 

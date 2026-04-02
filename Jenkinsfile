@@ -29,13 +29,13 @@ stage('Build And Test In Docker Compose') {
   steps {
     script {
       if (isUnix()) {
-        sh 'docker-compose up -d postgres'
-        sh 'docker-compose run --rm ci-backend-tests'
-        sh 'docker-compose run --rm ci-frontend-tests'
+        sh 'docker compose up -d postgres'
+        sh 'docker compose run --rm ci-backend-tests'
+        sh 'docker compose run --rm ci-frontend-tests'
       } else {
-        bat 'docker-compose up -d postgres'
-        bat 'docker-compose run --rm ci-backend-tests'
-        bat 'docker-compose run --rm ci-frontend-tests'
+        bat 'docker compose up -d postgres'
+        bat 'docker compose run --rm ci-backend-tests'
+        bat 'docker compose run --rm ci-frontend-tests'
       }
     }
   }
@@ -43,9 +43,9 @@ stage('Build And Test In Docker Compose') {
     always {
       script {
         if (isUnix()) {
-          sh 'docker-compose down --remove-orphans || true'
+          sh 'docker compose down --remove-orphans || true'
         } else {
-          bat 'docker-compose down --remove-orphans'
+          bat 'docker compose down --remove-orphans'
         }
       }
       junit allowEmptyResults: true,
