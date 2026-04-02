@@ -18,7 +18,12 @@ pipeline {
       }
     }
 
-stage('Clean Docker') { steps { script { bat 'docker-compose down --remove-orphans || exit 0' bat 'docker rm -f smart-task-postgres || exit 0' } } }
+stage('Clean Docker') {
+steps {
+bat 'docker-compose down --remove-orphans || exit 0'
+bat 'docker rm -f smart-task-postgres || exit 0'
+}
+}
 
 stage('Build And Test In Docker Compose') {
   steps {
