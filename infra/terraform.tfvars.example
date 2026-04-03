@@ -1,0 +1,2 @@
+# Copy to terraform.tfvars (gitignored), set your PAT, then: terraform apply
+ghcr_token = "ghp_xxxxxxxx"

@@ -5,3 +5,13 @@ target/
 .env
 .idea
 .vscode
+
+# Terraform — do not commit secrets or local state
+infra/terraform.tfvars
+*.auto.tfvars
+infra/.terraform/
+infra/terraform.tfstate
+infra/terraform.tfstate.backup
+
+# Angular build cache
+smart-task-frontend/.angular/
