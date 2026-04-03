@@ -3,6 +3,10 @@ dist/
 target/
 *.log
 .env
+smart-task-frontend/.env
+smart-task-frontend/.env.local
+smart-task-frontend/.env.production
+smart-task-frontend/.env.production.local
 .idea
 .vscode
 

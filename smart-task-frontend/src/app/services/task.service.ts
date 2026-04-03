@@ -3,12 +3,12 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-import { environment } from '../../environments/environment';
+import { API_URL } from '../api-url';
 import { Task } from '../models/task.model';
 
 @Injectable({ providedIn: 'root' })
 export class TaskService {
-  private readonly taskUrl = `${environment.apiUrl}/tasks`;
+  private readonly taskUrl = `${API_URL}/tasks`;
   recommendation: Record<string, unknown> | null = null;
 
   constructor(private readonly http: HttpClient) {}
@@ -23,14 +23,14 @@ export class TaskService {
       .pipe(tap((result) => (this.recommendation = result)));
   }
 
-  /** POST {apiUrl}/tasks — creates a task; list should be reloaded by the caller after success. */
+  /** POST {API_URL}/tasks — creates a task; list should be reloaded by the caller after success. */
   createTask(task: Task): Observable<Task> {
     return this.http.post<Task>(this.taskUrl, task, {
       headers: this.authHeaders().set('Content-Type', 'application/json')
     });
   }
 
-  /** PUT {apiUrl}/tasks/{id} — full task update (including completed). */
+  /** PUT {API_URL}/tasks/{id} — full task update (including completed). */
   updateTask(id: number, task: Task): Observable<Task> {
     return this.http.put<Task>(`${this.taskUrl}/${id}`, task, {
       headers: this.authHeaders().set('Content-Type', 'application/json')

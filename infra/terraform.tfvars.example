@@ -1,2 +1,8 @@
-# Copy to terraform.tfvars (gitignored), set your PAT, then: terraform apply
+# Copy to terraform.tfvars (gitignored), set values, then: terraform apply
 ghcr_token = "ghp_xxxxxxxx"
+
+# Your public IP/32 (or office VPN CIDR). Never use 0.0.0.0/0 for SSH in production.
+allowed_ssh_cidrs = ["203.0.113.10/32"]
+
+# Optional: tighten who can reach the app; default in variables is 0.0.0.0/0
+# allowed_app_cidrs = ["0.0.0.0/0"]
