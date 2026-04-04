@@ -3,11 +3,13 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, catchError, tap, throwError } from 'rxjs';
 
-import { API_URL } from '../api-url';
+import { getApiBaseUrl } from '../api-url';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly authUrl = `${API_URL}/auth`;
+  private get authUrl(): string {
+    return `${getApiBaseUrl()}/auth`;
+  }
 
   constructor(
     private readonly http: HttpClient,

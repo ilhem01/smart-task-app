@@ -3,12 +3,14 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-import { API_URL } from '../api-url';
+import { getApiBaseUrl } from '../api-url';
 import { Task } from '../models/task.model';
 
 @Injectable({ providedIn: 'root' })
 export class TaskService {
-  private readonly taskUrl = `${API_URL}/tasks`;
+  private get taskUrl(): string {
+    return `${getApiBaseUrl()}/tasks`;
+  }
   recommendation: Record<string, unknown> | null = null;
 
   constructor(private readonly http: HttpClient) {}

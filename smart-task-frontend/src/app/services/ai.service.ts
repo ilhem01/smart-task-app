@@ -2,11 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import { API_URL } from '../api-url';
+import { getApiBaseUrl } from '../api-url';
 
 @Injectable({ providedIn: 'root' })
 export class AiService {
-  private readonly recommendationUrl = `${API_URL}/tasks/recommendation`;
+  private get recommendationUrl(): string {
+    return `${getApiBaseUrl()}/tasks/recommendation`;
+  }
 
   constructor(private readonly http: HttpClient) {}
 
