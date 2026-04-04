@@ -24,6 +24,7 @@ pipeline {
         script {
           if (isUnix()) {
             sh '''
+              whoami
               set +e
               echo "== Compose down (project in workspace) =="
               docker compose down --remove-orphans 2>/dev/null || true
