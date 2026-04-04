@@ -1,10 +1,10 @@
 locals {
   app_ingress_ports = {
-    80   = "HTTP"
-    3000 = "frontend"
-    4001 = "auth-service"
-    4002 = "task-service"
-    8080 = "api-gateway"
+    80    = "HTTP"
+    3000  = "frontend"
+    8081  = "auth-service"
+    4002  = "task-service"
+    8080  = "api-gateway"
   }
 }
 
@@ -115,7 +115,7 @@ services:
   auth-service:
     image: ghcr.io/ilhem01/smart-task-auth-service:latest
     ports:
-      - "4001:4001"
+      - "8081:8081"
 
   task-service:
     image: ghcr.io/ilhem01/smart-task-task-service:latest
