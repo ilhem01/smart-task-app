@@ -44,7 +44,7 @@ services:
     environment:
       AUTH_SERVICE_URI: http://auth-service:8081
       TASK_SERVICE_URI: http://task-service:8082
-      CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN:-http://localhost:4200}
+      CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN:-http://3.68.189.37:3000}
       JWT_SECRET: ${JWT_SECRET:-smart-task-auth-service-secret-key-2026}
     depends_on:
       - auth-service

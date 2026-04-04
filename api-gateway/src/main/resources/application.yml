@@ -11,7 +11,7 @@ spring:
         cors-configurations:
           "[/**]":
             allowedOrigins:
-              - "${CORS_ALLOWED_ORIGIN:http://localhost:4200}"
+              - "${CORS_ALLOWED_ORIGIN:http://3.68.189.37:3000}"
             allowedHeaders:
               - "*"
             allowedMethods:
@@ -19,7 +19,9 @@ spring:
               - POST
               - PUT
               - DELETE
+              - OPTIONS
             allowCredentials: true
+            maxAge: 3600
       routes:
         - id: auth-openapi-proxy
           uri: ${AUTH_SERVICE_URI:http://localhost:8081}
