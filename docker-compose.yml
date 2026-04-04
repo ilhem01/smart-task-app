@@ -46,6 +46,7 @@ services:
       AUTH_SERVICE_URI: http://auth-service:8081
       TASK_SERVICE_URI: http://task-service:8082
       JWT_SECRET: ${JWT_SECRET:-smart-task-auth-service-secret-key-2026}
+      CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN:-http://localhost:3000}
     depends_on:
       - auth-service
       - task-service
