@@ -169,7 +169,8 @@ pipeline {
               docker build -t "${REG}/smart-task-api-gateway:${TAG}" ./api-gateway
               docker push "${REG}/smart-task-api-gateway:${TAG}"
               echo "== docker build + push frontend =="
-              docker build --build-arg VITE_API_URL=http://3.68.189.37:8080 -t "${REG}/smart-task-frontend:${TAG}" ./smart-task-frontend
+              VITE_API_URL="${VITE_API_URL:-http://localhost:8080}"
+              docker build --build-arg "VITE_API_URL=${VITE_API_URL}" -t "${REG}/smart-task-frontend:${TAG}" ./smart-task-frontend
               docker push "${REG}/smart-task-frontend:${TAG}"
             '''
           } else {
@@ -191,7 +192,8 @@ pipeline {
               docker push %SMART_TASK_IMAGE_REGISTRY%/smart-task-api-gateway:%SMART_TASK_IMAGE_TAG%
               if errorlevel 1 exit /b 1
               echo == docker build + push frontend ==
-              docker build --build-arg VITE_API_URL=http://3.68.189.37:8080 -t %SMART_TASK_IMAGE_REGISTRY%/smart-task-frontend:%SMART_TASK_IMAGE_TAG% ./smart-task-frontend
+              if not defined VITE_API_URL set VITE_API_URL=http://localhost:8080
+              docker build --build-arg VITE_API_URL=%VITE_API_URL% -t %SMART_TASK_IMAGE_REGISTRY%/smart-task-frontend:%SMART_TASK_IMAGE_TAG% ./smart-task-frontend
               if errorlevel 1 exit /b 1
               docker push %SMART_TASK_IMAGE_REGISTRY%/smart-task-frontend:%SMART_TASK_IMAGE_TAG%
               if errorlevel 1 exit /b 1

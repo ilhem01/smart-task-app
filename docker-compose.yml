@@ -23,6 +23,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB_AUTH:-auth_db}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN:-http://localhost:3000}
     depends_on:
       postgres:
         condition: service_healthy
@@ -44,7 +45,6 @@ services:
     environment:
       AUTH_SERVICE_URI: http://auth-service:8081
       TASK_SERVICE_URI: http://task-service:8082
-      CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN:-http://3.68.189.37:3000}
       JWT_SECRET: ${JWT_SECRET:-smart-task-auth-service-secret-key-2026}
     depends_on:
       - auth-service
