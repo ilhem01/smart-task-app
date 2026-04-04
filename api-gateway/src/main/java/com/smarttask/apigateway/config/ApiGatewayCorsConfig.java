@@ -30,11 +30,11 @@ public class ApiGatewayCorsConfig {
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .toList();
-        List<String> effective = origins.isEmpty() ? List.of("http://localhost:3000") : origins;
+        List<String> effective = origins.isEmpty() ? List.of("*") : origins;
         log.info("API Gateway CORS allowed origins: {}", effective);
 
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(effective);
+        configuration.setAllowedOriginPatterns(effective);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setMaxAge(3600L);
