@@ -5,7 +5,8 @@ RUN npm ci --no-audit --no-fund
 COPY . .
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
-RUN printf 'VITE_API_URL=%s\n' "$VITE_API_URL" > .env.production \
+# Only inject VITE_API_URL when set. Empty = use runtime resolution in api-url.ts (same host as SPA :8080).
+RUN if [ -n "$VITE_API_URL" ]; then printf 'VITE_API_URL=%s\n' "$VITE_API_URL" > .env.production; fi \
   && npm run build -- --configuration production
 
 FROM nginx:1.27-alpine
