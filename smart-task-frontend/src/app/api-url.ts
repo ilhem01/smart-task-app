@@ -1,9 +1,8 @@
 /**
  * API Gateway base URL.
  * - Build-time VITE_API_URL is used for split hosts / custom API domains (non-localhost).
- * - In the browser, if the baked-in URL points at localhost, ignore it and use the same host
- *   as the page with port 8080. Angular/esbuild inlines import.meta.env at build time, which
- *   often becomes localhost:8080 and breaks EC2/public deploys (loopback / PNA).
+ * - In the browser, loopback URLs from the build are ignored; use same host as the page :8080.
+ * - No module-level cache: caching once could pin localhost if the first call hit a bad branch.
  */
 function viteApiUrlFromBuild(): string | undefined {
   const v = import.meta.env?.VITE_API_URL?.trim();
@@ -19,26 +18,26 @@ function isLoopbackApiUrl(url: string): boolean {
   }
 }
 
-let cached: string | null = null;
+function hasBrowserLocation(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    !!window.location &&
+    typeof window.location.hostname === 'string' &&
+    window.location.hostname.length > 0
+  );
+}
 
 export function getApiBaseUrl(): string {
-  if (cached !== null) {
-    return cached;
-  }
   const fromBuild = viteApiUrlFromBuild();
-  if (typeof window !== 'undefined' && window.location?.hostname) {
+  if (hasBrowserLocation()) {
     if (fromBuild && !isLoopbackApiUrl(fromBuild)) {
-      cached = fromBuild;
-      return cached;
+      return fromBuild;
     }
     const { protocol, hostname } = window.location;
-    cached = `${protocol}//${hostname}:8080`;
-    return cached;
+    return `${protocol}//${hostname}:8080`;
   }
-  if (fromBuild) {
-    cached = fromBuild;
-    return cached;
+  if (fromBuild && !isLoopbackApiUrl(fromBuild)) {
+    return fromBuild;
   }
-  cached = 'http://localhost:8080';
-  return cached;
+  return 'http://localhost:8080';
 }
