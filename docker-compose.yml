@@ -19,6 +19,8 @@ services:
 
   auth-service:
     image: ${SMART_TASK_IMAGE_REGISTRY:-ghcr.io/ilhem01}/smart-task-auth-service:${SMART_TASK_IMAGE_TAG:-latest}
+    ports:
+      - "8081:8081"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB_AUTH:-auth_db}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
@@ -31,6 +33,8 @@ services:
 
   task-service:
     image: ${SMART_TASK_IMAGE_REGISTRY:-ghcr.io/ilhem01}/smart-task-task-service:${SMART_TASK_IMAGE_TAG:-latest}
+    ports:
+      - "8082:8082"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB_TASK:-taskdb}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
@@ -42,6 +46,8 @@ services:
 
   api-gateway:
     image: ${SMART_TASK_IMAGE_REGISTRY:-ghcr.io/ilhem01}/smart-task-api-gateway:${SMART_TASK_IMAGE_TAG:-latest}
+    ports:
+      - "8080:8080"
     environment:
       AUTH_SERVICE_URI: http://auth-service:8081
       TASK_SERVICE_URI: http://task-service:8082
@@ -54,6 +60,8 @@ services:
 
   frontend:
     image: ${SMART_TASK_IMAGE_REGISTRY:-ghcr.io/ilhem01}/smart-task-frontend:${SMART_TASK_IMAGE_TAG:-latest}
+    ports:
+      - "3000:80"
     depends_on:
       - api-gateway
     restart: unless-stopped
