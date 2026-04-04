@@ -14,9 +14,8 @@ import java.util.List;
 
 /**
  * CORS at the gateway edge: the browser calls :8080 here, not auth-service directly.
- * Set {@code CORS_ALLOWED_ORIGIN} to the exact SPA origin (e.g. {@code http://PUBLIC_IP:3000}).
- * Comma-separated values are supported (e.g. local + EC2). If unset, defaults to localhost:3000 only —
- * a public SPA then gets OPTIONS preflight rejected with 403.
+ * Set {@code CORS_ALLOWED_ORIGIN} to the SPA origin(s), comma-separated (e.g. {@code http://PUBLIC_IP:3000}).
+ * If the list is empty after parsing, allows all origins with pattern {@code *} (dev / loose EC2 only).
  */
 @Configuration
 public class ApiGatewayCorsConfig {
@@ -30,11 +29,11 @@ public class ApiGatewayCorsConfig {
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .toList();
-        List<String> effective = origins.isEmpty() ? List.of("*") : origins;
-        log.info("API Gateway CORS allowed origins: {}", effective);
+        List<String> patterns = origins.isEmpty() ? List.of("*") : origins;
+        log.info("API Gateway CORS allowed origin patterns: {}", patterns);
 
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(effective);
+        configuration.setAllowedOriginPatterns(patterns);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setMaxAge(3600L);
