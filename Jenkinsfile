@@ -240,13 +240,13 @@ pipeline {
       }
     }
 
-    stage('Debug Docker') {
-      steps {
-        bat 'whoami'
-        bat 'docker context ls'
-        bat 'docker info'
-      }
-    }
+    // stage('Debug Docker') {
+    //   steps {
+    //     bat 'whoami'
+    //     bat 'docker context ls'
+    //     bat 'docker info'
+    //   }
+    // }
   }
 
   post {
