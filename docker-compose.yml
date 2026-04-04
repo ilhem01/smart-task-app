@@ -54,6 +54,8 @@ services:
 
   frontend:
     image: ${SMART_TASK_IMAGE_REGISTRY:-ghcr.io/ilhem01}/smart-task-frontend:${SMART_TASK_IMAGE_TAG:-latest}
+    ports:
+      - "3000:80"
     depends_on:
       - api-gateway
     restart: unless-stopped
