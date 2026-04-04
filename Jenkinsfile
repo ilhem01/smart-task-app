@@ -9,6 +9,7 @@ pipeline {
   environment {
     CI = 'true'
     SMART_TASK_IMAGE_REGISTRY = 'ghcr.io/ilhem01'
+    PATH = "/usr/local/bin:$PATH"
     SMART_TASK_IMAGE_TAG = "${env.SMART_TASK_IMAGE_TAG ?: 'latest'}"
   }
 
@@ -26,7 +27,7 @@ pipeline {
             sh '''
               env
               whoami
-              docker ps 
+              docker ps   
               set +e
               echo "== Compose down (project in workspace) =="
               docker compose down --remove-orphans 2>/dev/null || true
