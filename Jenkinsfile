@@ -120,8 +120,8 @@ pipeline {
       }
     }
 
-    Jenkins credential id github-ghcr: type "Username with password" — username = GitHub login (not email);
-    password = classic PAT with read:packages + write:packages; add repo if packages are private / need repo access.
+    //Jenkins credential id github-ghcr: type "Username with password" — username = GitHub login (not email);
+    //password = classic PAT with read:packages + write:packages; add repo if packages are private / need repo access.
     stage('Login to GitHub Container Registry') {
       steps {
         withCredentials([usernamePassword(credentialsId: 'github-ghcr', usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_TOKEN')]) {
