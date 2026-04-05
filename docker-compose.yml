@@ -77,7 +77,7 @@ services:
       WEBHOOK_URL: http://localhost:5678/
       TZ: UTC
     volumes:
-      - n8n_data:/home/node/.n8n
+      - /tmp/n8n_data:/home/node/.n8n
     restart: unless-stopped
 
   ci-backend-tests:
