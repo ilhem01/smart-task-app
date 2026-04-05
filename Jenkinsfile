@@ -228,9 +228,9 @@ pipeline {
       steps {
         script {
           if (isUnix()) {
-            sh 'docker compose up -d postgres auth-service task-service api-gateway frontend'
+            sh 'docker compose up -d postgres auth-service task-service api-gateway frontend n8n'
           } else {
-            bat 'docker compose up -d postgres auth-service task-service api-gateway frontend'
+            bat 'docker compose up -d postgres auth-service task-service api-gateway frontend n8n'
           }
         }
       }
