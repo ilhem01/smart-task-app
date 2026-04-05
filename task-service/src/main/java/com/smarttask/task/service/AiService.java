@@ -21,8 +21,8 @@ import java.util.regex.Pattern;
 public class AiService {
 
     private static final Logger log = LoggerFactory.getLogger(AiService.class);
-    private static final String WEBHOOK_URL = "http://localhost:5678/webhook/task-ai";
-    private static final String RECOMMENDATION_WEBHOOK_URL = "http://localhost:5678/webhook/task-recommendation";
+    private static final String WEBHOOK_URL = "http://n8n:5678/webhook/task-ai";
+    private static final String RECOMMENDATION_WEBHOOK_URL = "http://n8n:5678/webhook/task-recommendation";
     private static final String FALLBACK_SUMMARY = "No summary available";
     private static final String FALLBACK_PRIORITY = "MEDIUM";
     private static final String FALLBACK_DEADLINE = "";
