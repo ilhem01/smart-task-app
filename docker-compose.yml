@@ -75,6 +75,7 @@ services:
       N8N_PORT: 5678
       N8N_PROTOCOL: http
       WEBHOOK_URL: http://localhost:5678/
+      CORS_ALLOWED_ORIGIN: "*"
       TZ: UTC
             # Connect n8n to your Postgres service
       DB_TYPE: postgresdb
